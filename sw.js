@@ -15,7 +15,8 @@ self.addEventListener('activate', (event) => {
     Non-Lifecycle Events
 */
 
+// Basic Fetch Event
+// self.addEventListener('fetch', (event) => {
+//     console.log('[SW] Fetch Event: ', event)
+// })
 
-self.addEventListener('fetch', (event) => {
-    console.log('[SW] Fetch Event: ', event)
-})
