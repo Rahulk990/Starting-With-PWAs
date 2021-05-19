@@ -15,8 +15,11 @@ window.addEventListener('beforeinstallprompt', (event) => {
     return false;
 })
 
+/*
+    Asynchronous Tasks
+*/
 
-// Async Tasks using Callbacks
+// // Async Tasks using Callbacks
 // setTimeout(() => {
 //     console.log("Outer")
 //     setTimeout(() => {
@@ -25,44 +28,46 @@ window.addEventListener('beforeinstallprompt', (event) => {
 // }, 2000);
 
 
-// Using Promise
-let promise = new Promise((resolve, reject) => {
-    setTimeout(() => {
-        resolve("This is the returned value");
-        // reject("This is the error message");
-    }, 2000)
-});
+// // Using Promise
+// let promise = new Promise((resolve, reject) => {
+//     setTimeout(() => {
+//         resolve("This is the returned value");
+//         // reject("This is the error message");
+//     }, 2000)
+// });
 
-promise.then((value) => {
-    return value + " Handled";
-}).then((value) => {
-    console.log(value)
-}).catch((err) => {
-    console.log(err)
-})
+// promise.then((value) => {
+//     return value + " Handled";
+// }).then((value) => {
+//     console.log(value)
+// }).catch((err) => {
+//     console.log(err)
+// })
 
 
-// Using Fetch
-fetch('https://httpbin.org/ip')
-    .then(res => {
-        console.log(res)
-        return res.json();
-    })
-    .then(data => {
-        console.log(data)
-    })
+// // Using Fetch
+// fetch('https://httpbin.org/ip')
+//     .then(res => {
+//         console.log(res)
+//         return res.json();
+//     })
+//     .then(data => {
+//         console.log(data)
+//     })
 
-fetch('https://httpbin.org/post', {
-    method: 'POST',
-    headers: {
-        'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({ message: "This is the post data" })
-})
-    .then(res => {
-        console.log(res)
-        return res.json();
-    })
-    .then(data => {
-        console.log(data)
-    })
+// fetch('https://httpbin.org/post', {
+//     method: 'POST',
+//     headers: {
+//         'Content-Type': 'application/json',
+//     },
+//     body: JSON.stringify({ message: "This is the post data" })
+// })
+//     .then(res => {
+//         console.log(res)
+//         return res.json();
+//     })
+//     .then(data => {
+//         console.log(data)
+//     })
+
+
