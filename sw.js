@@ -60,10 +60,9 @@ self.addEventListener('activate', (event) => {
 function isInArray(string, array) {
     var cachePath;
     if (string.indexOf(self.origin) === 0) {
-        console.log('matched ', string);
         cachePath = string.substring(self.origin.length);
     } else {
-        cachePath = string; // store the full request (for CDNs)
+        cachePath = string;
     }
     return array.indexOf(cachePath) > -1;
 }
@@ -92,7 +91,7 @@ function trimCache(cacheName, maxItems) {
 self.addEventListener('fetch', (event) => {
     // console.log('[SW] Fetch Event: ', event)
 
-    const url = 'https://httpbin.org/get';
+    const url = 'https://pwa-demo-3a456-default-rtdb.firebaseio.com/posts.json';
 
     if (event.request.url.indexOf(url) > -1) {
 
