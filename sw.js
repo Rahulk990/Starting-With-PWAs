@@ -1,10 +1,15 @@
-const STATIC_CACHE = 'Pre-Cache-v4'
+importScripts('/src/js/idb.js')
+importScripts('/src/js/dbUtility.js')
+
+const STATIC_CACHE = 'Pre-Cache-v5'
 const DYNAMIC_CACHE = 'Dynamic-Cache-v1'
 const ON_DEMAND_CACHE = 'On-Demand-Cache'
 const STATIC_FILES = [
     '/',
     '/index.html',
     '/offline.html',
+    '/src/js/idb.js',
+    '/src/js/dbUtility.js',
     '/src/js/app.js',
     '/src/js/feed.js',
     '/src/js/material.min.js',
@@ -14,7 +19,8 @@ const STATIC_FILES = [
     'https://fonts.googleapis.com/css?family=Roboto:400,700',
     'https://fonts.googleapis.com/icon?family=Material+Icons',
     'https://cdnjs.cloudflare.com/ajax/libs/material-design-lite/1.3.0/material.indigo-pink.min.css'
-]
+];
+
 
 // Install Event
 self.addEventListener('install', (event) => {
@@ -96,17 +102,24 @@ self.addEventListener('fetch', (event) => {
     if (event.request.url.indexOf(url) > -1) {
 
         // Cache, then Network Strategy
-        event.respondWith(
-            caches.open(DYNAMIC_CACHE)
-                .then((cache) => {
-                    return fetch(event.request)
-                        .then((response) => {
+        event.respondWith(fetch(event.request)
+            .then((response) => {
 
-                            // Dynamically Caching the updated data
-                            cache.put(event.request.url, response.clone())
-                            return response;
-                        })
-                })
+                // Dynamically Caching the updated data in IndexedDB
+                const clonedResponse = response.clone();
+                clearAllData('posts')
+                    .then(() => {
+                        return clonedResponse.json()
+                    })
+                    .then((data) => {
+                        for (let key in data) {
+                            // console.log(key, data[key]);
+                            writeData('posts', data[key]);
+                        }
+                    })
+
+                return response;
+            })
         )
 
     } else if (isInArray(event.request.url, STATIC_FILES)) {

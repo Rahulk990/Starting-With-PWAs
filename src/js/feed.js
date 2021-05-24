@@ -99,25 +99,16 @@ fetch(url)
     });
 
 // From Cache
-if ('caches' in window) {
-    caches.match(url)
-        .then(function (response) {
-            if (response) {
-                return response.json();
-            }
-        })
-        .then(function (data) {
-            console.log('From Cache', data);
+if ('indexedDB' in window) {
+    readAllData('posts')
+        .then((data) => {
 
             // Override if not already updated
             if (data && !networkDataReturned) {
-                let dataArray = [];
-                for (let key in data) {
-                    dataArray.push(data[key]);
-                }
-                updateUI(dataArray);
+                console.log('From IndexedDB', data);
+                updateUI(data);
             }
-        });
+        })
 }
 
 
