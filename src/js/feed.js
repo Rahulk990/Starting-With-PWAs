@@ -2,9 +2,12 @@ var shareImageButton = document.querySelector('#share-image-button');
 var createPostArea = document.querySelector('#create-post');
 var closeCreatePostModalButton = document.querySelector('#close-create-post-modal-btn');
 var sharedMomentsArea = document.querySelector('#shared-moments');
+const form = document.querySelector('form');
+const titleInput = document.querySelector('#title');
+const locationInput = document.querySelector('#location');
 
 function openCreatePostModal() {
-    createPostArea.style.display = 'block';
+    createPostArea.style.transform = 'translateY(0)';
     if (deferredPrompt) {
         deferredPrompt.prompt();
         deferredPrompt.userChoice.then(choice => console.log(choice))
@@ -13,7 +16,7 @@ function openCreatePostModal() {
 }
 
 function closeCreatePostModal() {
-    createPostArea.style.display = 'none';
+    createPostArea.style.transform = 'translateY(100vh)';
 }
 
 shareImageButton.addEventListener('click', openCreatePostModal);
@@ -45,7 +48,6 @@ function createCard(data) {
     cardTitle.className = 'mdl-card__title';
     cardTitle.style.backgroundImage = 'url(' + data.image + ')';
     cardTitle.style.backgroundSize = 'cover';
-    cardTitle.style.height = '180px';
     cardWrapper.appendChild(cardTitle);
     var cardTitleTextElement = document.createElement('h2');
     cardTitleTextElement.style.color = 'white';
@@ -110,5 +112,69 @@ if ('indexedDB' in window) {
             }
         })
 }
+
+// Sending Data to Firebase
+const sendData = (data) => {
+    fetch(url, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json'
+        },
+        body: JSON.stringify(data)
+    })
+        .then((res) => {
+            console.log('Sent Data:', res);
+            updateUI();
+        })
+}
+
+form.addEventListener('submit', (event) => {
+    event.preventDefault();
+
+    // Validating inputs
+    if (titleInput.value.trim() === '' || locationInput.value.trim() === '') {
+        return;
+    }
+    closeCreatePostModal();
+
+    // Accessing SW as form data is not available in SW
+    if ('serviceWorker' in navigator && 'SyncManager' in window) {
+        navigator.serviceWorker.ready
+            .then((sw) => {
+
+                // Adding Data to IDB
+                const postData = {
+                    id: new Date().toISOString(),
+                    title: titleInput.value,
+                    location: locationInput.value
+                }
+
+                writeData('sync', postData)
+                    .then(() => {
+
+                        // Registering Sync Task
+                        return sw.sync.register('sync-new-post');
+                    })
+                    .then(() => {
+                        const snackbar = document.querySelector('#confirmation-toast');
+                        const data = { message: "Your post has been saved for Synchronization!" }
+                        snackbar.MaterialSnackbar.showSnackbar(data);
+                    })
+            })
+    }
+    else {
+
+        // Sending Post Request
+        sendData({
+            id: new Date().toISOString(),
+            title: titleInput.value,
+            location: locationInput.value,
+            image: "https://firebasestorage.googleapis.com/v0/b/pwa-demo-3a456.appspot.com/o/sf-boat.jpg?alt=media&token=5b0beeaa-5a7a-43ec-bb65-485361de0aa3"
+        })
+    }
+})
+
+
 
 

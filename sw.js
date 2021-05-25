@@ -1,7 +1,7 @@
 importScripts('/src/js/idb.js')
 importScripts('/src/js/dbUtility.js')
 
-const STATIC_CACHE = 'Pre-Cache-v5'
+const STATIC_CACHE = 'Pre-Cache-v7'
 const DYNAMIC_CACHE = 'Dynamic-Cache-v1'
 const ON_DEMAND_CACHE = 'On-Demand-Cache'
 const STATIC_FILES = [
@@ -20,6 +20,7 @@ const STATIC_FILES = [
     'https://fonts.googleapis.com/icon?family=Material+Icons',
     'https://cdnjs.cloudflare.com/ajax/libs/material-design-lite/1.3.0/material.indigo-pink.min.css'
 ];
+const url = 'https://pwa-demo-3a456-default-rtdb.firebaseio.com/posts.json';
 
 
 // Install Event
@@ -97,8 +98,6 @@ function trimCache(cacheName, maxItems) {
 self.addEventListener('fetch', (event) => {
     // console.log('[SW] Fetch Event: ', event)
 
-    const url = 'https://pwa-demo-3a456-default-rtdb.firebaseio.com/posts.json';
-
     if (event.request.url.indexOf(url) > -1) {
 
         // Cache, then Network Strategy
@@ -158,6 +157,52 @@ self.addEventListener('fetch', (event) => {
                                 if (event.request.headers.get('Accept').includes('text/html')) {
                                     return caches.match('/offline.html');
                                 }
+                            })
+                    }
+                })
+        )
+    }
+})
+
+/*
+    Synchronization Events
+*/
+
+self.addEventListener('sync', (event) => {
+    console.log('[SW] Background Syncing', event);
+
+    if (event.tag === 'sync-new-post') {
+        console.log('[SW] Syncing new Posts');
+
+        event.waitUntil(
+            readAllData('sync')
+                .then((data) => {
+
+                    // Syncing remaining posts
+                    for (let dataItem of data) {
+                        fetch(url, {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'Accept': 'application/json'
+                            },
+                            body: JSON.stringify({
+                                id: dataItem.id,
+                                title: dataItem.title,
+                                location: dataItem.location,
+                                image: "https://firebasestorage.googleapis.com/v0/b/pwa-demo-3a456.appspot.com/o/sf-boat.jpg?alt=media&token=5b0beeaa-5a7a-43ec-bb65-485361de0aa3"
+                            })
+                        })
+                            .then((res) => {
+                                console.log('Sent Data:', res);
+
+                                // Deleting Item from Object Store
+                                if (res.ok) {
+                                    deleteItem('sync', dataItem.id);
+                                }
+                            })
+                            .catch((err) => {
+                                console.log(err);
                             })
                     }
                 })
